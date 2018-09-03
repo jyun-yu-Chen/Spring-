@@ -253,15 +253,40 @@ public String getPassword(){
 
 ## 三、用戶創建請求
 
+> ### 【知識點1】@RequestBody 映射請求體到 java 方法的參數
+>
+> ### 【知識點2】日期類型參數的處理
+>
+> ### 【知識點3】@Valid 註解和 BindingResult 驗證請求參數的合法性並處理校驗結果
+
+  	
+
 ### 【知識點1】@RequestBody 映射請求體到 java 方法的參數
 
-### 【知識點2】日期類型
+#### 前端給的 json 資料透過 @RequestBody 將 json 資料建立成一個物件並為參數在 java 方法裡使用
+
+#### 前端給的 json 資料(無論是透過瀏覽器AJAX還是APP HTTP Request)
+
+```json
+{"username":"David", "password":"12345"}
+```
 
 
 
+#### Spring Controller 中透過 @RequestBody 將 json 資料建立成一個物件並為參數在 java 方法裡使用
 
+```java
+@PostMapping
+public User create(@RequestBody User user){ //Here
+    System.out.println(user.getUsername());
+    System.out.println(user.getPassword());
+    
+    user.setId(1);
+    return user;
+}
+```
 
-
+#### 第 2 行 透過 @RequestBody 將 json 資料建立成一個物件並為參數在 java 方法裡使用
 
 
 
