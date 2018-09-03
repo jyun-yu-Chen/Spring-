@@ -290,3 +290,101 @@ public User create(@RequestBody User user){ //Here
 
 
 
+
+
+
+
+
+
+### 【知識點2】日期類型參數的處理
+
+#### 建議前端傳時間戳(例：new Date().getTime())給後端，由後端來自行決定要用什麼日期格式來顯示給使用者。反之由後端傳給前端也是用時間戳的方式。
+
+
+
+
+
+
+
+
+
+
+
+### 【知識點3】@Valid 註解和 BindingResult 驗證請求參數的合法性並處理校驗結果
+
+#### 用於驗證使用者輸入的資料合法性
+
+#### 在類別上加入 hibernate validator annotation───@NotBlank，標示此屬性(field or variable)不能是空字串
+
+```java
+public class User{
+    public interface UserSimpleView {};
+    public interface UserDetailView extends UserSimpleView {};
+
+    private String username;
+
+    @NotBlank // ~ Here -------------------------------------
+    private String password;
+
+    @JsonView(UserSimpleView.class)
+    public String getUsername(){
+        return username;
+    }
+
+    public void setUsername(String username){
+        this.username = username;
+    }
+
+     @JsonView(UserDetailView.class)
+     public String getPassword(){
+        return password;
+    }
+
+    public void setPassword(String password){
+        this.password = password;
+	}
+}
+```
+
+#### 第 7 行表示 password 不能為空，限制使用者一定要傳入password，在 Controller 類必須配合 @Valid 來使用才有校驗的效果
+
+```java
+@PostMapping
+public User create(@Valid @RequestBody User user){ // ~ Here --------------
+    System.out.println(user.getUsername());
+    System.out.println(user.getPassword());
+    
+    user.setId(1);
+    return user;
+}
+```
+
+#### 第 2 行加入 @Valid 它就會根據剛剛在 User 類寫的 @NotBlank 來進行校驗
+
+
+
+#### 目前通不過 @Valid + @NotBlank 校驗的資料，會直接不執行此 Controller 映射的 java 方法。但如果我們依然要進去此 java 方法記錄一些資訊(例如：哪個用戶在什麼時間點未輸入就發出請求)，此時該如何做呢？(既然驗證資料合法性又能進入方法執行一些代碼)
+
+#### 此時就需要 BindingResult 來處理
+
+#### @Valid 必須跟 BindingResult 配合，任何通不過 @Valid 校驗的錯誤結果都會由 BindingResult 來處理
+
+```java
+@PostMapping
+public User create(@Valid @RequestBody User user, BindingResult errors){ // ~ Here
+    
+    if(errors.hasErrors()){ 
+        errors.gasAllErrors.stream().forEach(error -> System.out.println(error.getDefaultMessage()));
+    }
+    
+    System.out.println(user.getUsername());
+    System.out.println(user.getPassword());
+    
+    user.setId(1);
+    return user;
+}
+```
+
+#### 第 2 行帶入 BindingResult 參數，好用來處理校驗的結果
+
+#### 第 4、5、6 行輸入錯誤的結果，以此案例來看傳入的密碼為空，會印出 "may not be empty" 的錯誤訊息
